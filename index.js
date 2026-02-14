@@ -17,22 +17,29 @@ app.use(
 
 app.use(express.json());
 
+// Routes
+import audioRoutes from './routes/audioRoutes.js';
+import playlistRoutes from './routes/playlistRoutes.js';
+
+app.use('/api/audio', audioRoutes);
+app.use('/api/playlist', playlistRoutes);
+
 // Connect to MongoDB and start scheduler
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(async () => {
     // Start Agenda scheduler after MongoDB is ready
     console.log('connected to mongodb');
-    
+
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);
   });
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
+  console.log(`Server running on port ${process.env.PORT}`);
 });
