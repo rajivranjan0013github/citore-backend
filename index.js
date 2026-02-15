@@ -13,8 +13,16 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+import audioRoutes from './routes/audioRoutes.js';
+import playlistRoutes from './routes/playlistRoutes.js';
 import loginRoutes from './routes/login.js';
 app.use('/api/login', loginRoutes);
+
+app.use('/api/audio', audioRoutes);
+app.use('/api/playlist', playlistRoutes);
+
+// Routes
+
 
 // Connect to MongoDB and start scheduler
 mongoose
