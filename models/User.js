@@ -14,14 +14,22 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ["male", "female", "other"],
     },
     age: {
         type: Number,
     },
+    language: {
+        type: String,
+    },
     appleUserId: {
         type: String,
     },
+    fcmToken: {
+        type: String,
+    },
+    plateform: {
+        type: String
+    }
 }, {
     timestamps: true,
 });

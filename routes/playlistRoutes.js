@@ -1,6 +1,7 @@
 import express from "express";
 import {
     createPlaylist,
+    createBulkPlaylist,
     getAllPlaylists,
     getPlaylistById,
     updatePlaylist,
@@ -11,6 +12,7 @@ import {
 const router = express.Router();
 
 router.post("/", createPlaylist);
+router.post("/bulk", createBulkPlaylist);
 router.get("/", getAllPlaylists);
 router.get("/:id", getPlaylistById);
 router.put("/:id", updatePlaylist);

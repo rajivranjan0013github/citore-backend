@@ -1,38 +1,27 @@
 import Audio from "../models/AudioSchema.js";
-import { uploadToR2, deleteFromR2 } from "../config/r2.js";
 
-// POST /api/audio/upload
-export const uploadAudio = async (req, res) => {
+// POST /api/audio
+export const createAudio = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: "No audio file provided" });
+        const { title, description, author, tags, duration, image, url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({ success: false, message: "No audio URL provided" });
         }
 
-        const { title, description, author, tags, duration, image } = req.body;
-
-        // Upload file to R2
-        const { key, url } = await uploadToR2(
-            req.file.buffer,
-            req.file.originalname,
-            req.file.mimetype
-        );
-
         const audio = await Audio.create({
-            title: title || req.file.originalname,
+            title: title || "Untitled",
             description,
             image,
             author,
             url,
-            tags: tags ? JSON.parse(tags) : [],
+            tags: tags || [],
             duration: duration ? Number(duration) : undefined,
         });
 
-        // Store R2 key for future deletion
-        audio._r2Key = key;
-
         res.status(201).json({ success: true, data: audio });
     } catch (error) {
-        console.error("Upload error:", error);
+        console.error("Create audio error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -75,14 +64,15 @@ export const getAudioById = async (req, res) => {
 // PUT /api/audio/:id
 export const updateAudio = async (req, res) => {
     try {
-        const { title, description, author, tags, duration, image } = req.body;
+        const { title, description, author, tags, duration, image, url } = req.body;
         const updateData = {};
 
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (author !== undefined) updateData.author = author;
         if (image !== undefined) updateData.image = image;
-        if (tags !== undefined) updateData.tags = typeof tags === "string" ? JSON.parse(tags) : tags;
+        if (url !== undefined) updateData.url = url;
+        if (tags !== undefined) updateData.tags = tags;
         if (duration !== undefined) updateData.duration = Number(duration);
 
         const audio = await Audio.findByIdAndUpdate(req.params.id, updateData, { new: true });
@@ -99,23 +89,12 @@ export const updateAudio = async (req, res) => {
 // DELETE /api/audio/:id
 export const deleteAudio = async (req, res) => {
     try {
-        const audio = await Audio.findById(req.params.id);
+        const audio = await Audio.findByIdAndDelete(req.params.id);
         if (!audio) {
             return res.status(404).json({ success: false, message: "Audio not found" });
         }
 
-        // Extract R2 key from URL and delete from R2
-        if (audio.url) {
-            const key = audio.url.split("/").pop();
-            try {
-                await deleteFromR2(key);
-            } catch (r2Err) {
-                console.warn("R2 delete failed (continuing):", r2Err.message);
-            }
-        }
-
-        await Audio.findByIdAndDelete(req.params.id);
-        res.json({ success: true, message: "Audio deleted" });
+        res.json({ success: true, message: "Audio deleted from database" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

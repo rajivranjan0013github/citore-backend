@@ -1,4 +1,5 @@
 import Playlist from "../models/PlaylistSchema.js";
+import Audio from "../models/AudioSchema.js";
 
 // POST /api/playlist
 export const createPlaylist = async (req, res) => {
@@ -120,6 +121,54 @@ export const deletePlaylist = async (req, res) => {
         }
         res.json({ success: true, message: "Playlist deleted" });
     } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// POST /api/playlist/bulk
+export const createBulkPlaylist = async (req, res) => {
+    try {
+        const { playlist, chapters } = req.body;
+
+        if (!playlist || !chapters || !Array.isArray(chapters)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid data. Expected 'playlist' object and 'chapters' array."
+            });
+        }
+
+        // 1. Create all Audio documents
+        const audioPromises = chapters.map(chapter => Audio.create({
+            title: chapter.title || "Untitled Chapter",
+            description: chapter.description,
+            image: chapter.image,
+            author: chapter.author || playlist.author,
+            url: chapter.url,
+            tags: chapter.tags || [],
+            duration: chapter.duration ? Number(chapter.duration) : undefined,
+        }));
+
+        const createdAudios = await Promise.all(audioPromises);
+        const audioIds = createdAudios.map(a => a._id);
+
+        // 2. Create the Playlist document
+        const newPlaylist = await Playlist.create({
+            title: playlist.title,
+            description: playlist.description,
+            category: playlist.category,
+            images: playlist.images || [],
+            author: playlist.author,
+            chapters: audioIds,
+            tags: playlist.tags || [],
+            duration: playlist.duration,
+        });
+
+        // 3. Return populated playlist
+        const populatedPlaylist = await Playlist.findById(newPlaylist._id).populate("chapters");
+
+        res.status(201).json({ success: true, data: populatedPlaylist });
+    } catch (error) {
+        console.error("Bulk upload error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

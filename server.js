@@ -16,7 +16,9 @@ app.use(express.json());
 import audioRoutes from './routes/audioRoutes.js';
 import playlistRoutes from './routes/playlistRoutes.js';
 import loginRoutes from './routes/login.js';
+import userRoutes from './routes/userRoutes.js';
 app.use('/api/login', loginRoutes);
+app.use('/api/users', userRoutes);
 
 app.use('/api/audio', audioRoutes);
 app.use('/api/playlist', playlistRoutes);

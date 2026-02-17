@@ -48,9 +48,11 @@ router.post("/google/loginSignUp", async (req, res) => {
 
         // Check if user exists
         let user = await User.findOne({ email: payload.email });
+        let isNewUser = false;
 
         if (!user) {
             // Create new user
+            isNewUser = true;
             user = await User.create({
                 email: payload.email,
                 name: payload.name,
@@ -59,6 +61,7 @@ router.post("/google/loginSignUp", async (req, res) => {
 
         res.json({
             success: true,
+            isNewUser,
             user: {
                 id: user._id,
                 email: user.email,
@@ -131,9 +134,11 @@ router.post("/apple/loginSignUp", async (req, res) => {
         let user = await User.findOne({
             $or: [{ email }, { appleUserId }]
         });
+        let isNewUser = false;
 
         if (!user) {
             // Create new user
+            isNewUser = true;
             user = await User.create({
                 email,
                 name: displayName || "User",
@@ -147,6 +152,7 @@ router.post("/apple/loginSignUp", async (req, res) => {
 
         res.json({
             success: true,
+            isNewUser,
             user: {
                 id: user._id,
                 email: user.email,
