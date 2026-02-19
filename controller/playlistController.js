@@ -49,6 +49,30 @@ export const getAllPlaylists = async (req, res) => {
     }
 };
 
+// GET /api/playlist/search?q=keyword  OR  ?category=Romance
+export const searchPlaylists = async (req, res) => {
+    try {
+        const { q, category } = req.query;
+        let filter = {};
+
+        if (q) {
+            const regex = new RegExp(q, 'i');
+            filter = { $or: [{ title: regex }, { category: regex }] };
+        } else if (category) {
+            filter = { category: { $regex: new RegExp(category, 'i') } };
+        }
+
+        const playlists = await Playlist.find(filter)
+            .populate("chapters")
+            .sort({ createdAt: -1 })
+            .limit(20);
+
+        res.json({ success: true, data: playlists });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // GET /api/playlist/:id
 export const getPlaylistById = async (req, res) => {
     try {
