@@ -29,6 +29,16 @@ const userSchema = new mongoose.Schema({
     },
     plateform: {
         type: String
+    },
+    isPremium: {
+        type: Boolean,
+        default: false,
+    },
+    premiumExpiresAt: {
+        type: Date,
+    },
+    premiumPlan: {
+        type: String,
     }
 }, {
     timestamps: true,

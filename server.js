@@ -19,8 +19,11 @@ import loginRoutes from './routes/login.js';
 import userRoutes from './routes/userRoutes.js';
 import playHistoryRoutes from './routes/playHistoryRoutes.js';
 import bookmarkRoutes from './routes/bookmarkRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js';
+
 app.use('/api/login', loginRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 app.use('/api/audio', audioRoutes);
 app.use('/api/playlist', playlistRoutes);
